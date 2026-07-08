@@ -1,8 +1,8 @@
 import admin from "firebase-admin";
 
-let adminApp: admin.app.App | null = null;
-let adminAuth: admin.auth.Auth | null = null;
-let adminDb: admin.firestore.Firestore | null = null;
+let adminApp: any = null;
+let adminAuth: any = null;
+let adminDb: any = null;
 
 export function getAdminApp() {
   if (adminApp) return adminApp;
