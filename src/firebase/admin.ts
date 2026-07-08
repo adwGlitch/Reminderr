@@ -1,18 +1,23 @@
-import { initializeApp, getApps, getApp, cert } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
+import admin from "firebase-admin";
 
 const initializeFirebaseAdmin = () => {
-  if (getApps().length > 0) {
-    return getApp();
+  if (admin.apps.length > 0) {
+    return admin.apps[0];
   }
 
   const projectId =
     process.env.FIREBASE_PROJECT_ID ||
     process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  // Replace escaped newlines — critical for Vercel env vars stored as a single line string
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  
+  let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  if (privateKey) {
+    // Strip surrounding quotes if present (which happens if pasted with quotes on Vercel)
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.slice(1, -1);
+    }
+    privateKey = privateKey.replace(/\\n/g, "\n");
+  }
 
   console.log("[Firebase Admin] Initializing...");
   console.log("[Firebase Admin] projectId:", projectId ? "✓ present" : "✗ MISSING");
@@ -29,8 +34,8 @@ const initializeFirebaseAdmin = () => {
   }
 
   if (clientEmail && privateKey) {
-    const app = initializeApp({
-      credential: cert({
+    const app = admin.initializeApp({
+      credential: admin.credential.cert({
         projectId,
         clientEmail,
         privateKey,
@@ -47,11 +52,11 @@ const initializeFirebaseAdmin = () => {
       "Session cookie operations will likely FAIL unless running on GCP."
   );
 
-  return initializeApp({ projectId });
+  return admin.initializeApp({ projectId });
 };
 
 const adminApp = initializeFirebaseAdmin();
-const adminAuth = getAuth(adminApp);
-const adminDb = getFirestore(adminApp);
+const adminAuth = admin.auth(adminApp);
+const adminDb = admin.firestore(adminApp);
 
 export { adminApp, adminAuth, adminDb };
