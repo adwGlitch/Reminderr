@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, ReactNode } from "react";
-import { onAuthStateChanged, getIdToken } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebase/config";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -11,6 +11,14 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/**
+ * AuthProvider syncs the Firebase Auth state into the Zustand store.
+ *
+ * IMPORTANT: This component intentionally does NOT manage session cookies.
+ * Session cookie creation/deletion is handled by the login, register, and
+ * logout flows directly. Doing it here caused a race condition where two
+ * competing POSTs to /api/auth/session fired simultaneously.
+ */
 export function AuthProvider({ children }: AuthProviderProps) {
   const { setUser, setLoading } = useAuthStore();
 
@@ -18,13 +26,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         setLoading(true);
+        console.log("[AuthProvider] Auth state changed:", firebaseUser?.uid ?? "signed out");
 
         if (firebaseUser) {
           // Fetch custom claims to check superAdmin status
           const idTokenResult = await firebaseUser.getIdTokenResult();
           const superAdmin = idTokenResult.claims.superAdmin === true;
 
-          // Verify email is verified or skip if not strictly enforced yet
           // Fetch additional profile data from Firestore
           const userDocRef = doc(db, "users", firebaseUser.uid);
           const userSnapshot = await getDoc(userDocRef);
@@ -58,31 +66,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
 
           if (profileData.disabled) {
-            // If user is disabled, sign them out
+            console.warn("[AuthProvider] User is disabled — signing out.");
+            // Sign out client-side and clear server-side session cookie
             await auth.signOut();
             await fetch("/api/auth/session", { method: "DELETE" });
             setUser(null);
             return;
           }
 
+          console.log("[AuthProvider] User profile loaded ✓", profileData.uid);
           setUser(profileData);
-
-          // Get fresh ID token and set session cookie
-          const idToken = await getIdToken(firebaseUser, true);
-          await fetch("/api/auth/session", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ idToken }),
-          });
         } else {
+          console.log("[AuthProvider] No user — clearing store.");
           setUser(null);
-          // Delete session cookie
-          await fetch("/api/auth/session", { method: "DELETE" });
         }
       } catch (error) {
-        console.error("Auth state synchronization error:", error);
+        console.error("[AuthProvider] Auth state synchronization error:", error);
         setUser(null);
       } finally {
         setLoading(false);

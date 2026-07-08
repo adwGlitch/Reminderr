@@ -15,6 +15,29 @@ import { motion } from "framer-motion";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+/** Maps Firebase Auth error codes to user-friendly messages. */
+function getAuthErrorMessage(code: string): string {
+  switch (code) {
+    // Firebase SDK v10+ merges user-not-found + wrong-password into this code
+    case "auth/invalid-credential":
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+      return "Invalid email or password. Please check your credentials and try again.";
+    case "auth/invalid-email":
+      return "The email address is not valid.";
+    case "auth/user-disabled":
+      return "This account has been disabled. Please contact support.";
+    case "auth/too-many-requests":
+      return "Too many failed attempts. Please wait a moment and try again.";
+    case "auth/network-request-failed":
+      return "Network error. Please check your connection and try again.";
+    case "auth/operation-not-allowed":
+      return "Email/password sign-in is not enabled. Please contact support.";
+    default:
+      return "Sign in failed. Please try again.";
+  }
+}
+
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -40,15 +63,22 @@ export default function LoginForm() {
       setIsLoading(true);
       setError(null);
 
-      // Sign in with Firebase Client SDK
+      console.log("[Login] Attempting sign in for:", values.email);
+
+      // Step 1: Sign in with Firebase Client SDK
       const userCredential = await signInWithEmailAndPassword(
         auth,
         values.email,
         values.password
       );
+      console.log("[Login] Firebase Auth sign in successful ✓", userCredential.user.uid);
 
-      // Force session sync
+      // Step 2: Get fresh ID token
       const idToken = await userCredential.user.getIdToken(true);
+      console.log("[Login] ID token obtained ✓");
+
+      // Step 3: Exchange ID token for server-side session cookie
+      console.log("[Login] Posting ID token to /api/auth/session...");
       const res = await fetch("/api/auth/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,21 +86,22 @@ export default function LoginForm() {
       });
 
       if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        console.error("[Login] Session sync failed:", res.status, body);
         throw new Error("Failed to synchronize session. Please try again.");
       }
 
+      console.log("[Login] Session synchronized ✓ — redirecting to", redirectPath);
       router.push(redirectPath);
       router.refresh();
     } catch (err: any) {
-      console.error("Login error:", err);
-      let message = "Invalid email or password.";
-      if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
-        message = "Invalid email or password.";
-      } else if (err.code === "auth/too-many-requests") {
-        message = "Too many failed attempts. Please try again later.";
-      } else if (err.message) {
-        message = err.message;
-      }
+      console.error("[Login] Error:", err?.code, err?.message);
+
+      // Firebase errors have an err.code; our thrown errors just have err.message
+      const message = err?.code
+        ? getAuthErrorMessage(err.code)
+        : err?.message || "Sign in failed. Please try again.";
+
       setError(message);
     } finally {
       setIsLoading(false);

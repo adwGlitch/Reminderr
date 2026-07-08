@@ -7,25 +7,47 @@ const initializeFirebaseAdmin = () => {
     return getApp();
   }
 
-  const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const projectId =
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  // Replace escaped newlines if private key is stored as string in env
+  // Replace escaped newlines — critical for Vercel env vars stored as a single line string
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
+  console.log("[Firebase Admin] Initializing...");
+  console.log("[Firebase Admin] projectId:", projectId ? "✓ present" : "✗ MISSING");
+  console.log("[Firebase Admin] clientEmail:", clientEmail ? "✓ present" : "✗ MISSING");
+  console.log(
+    "[Firebase Admin] privateKey:",
+    privateKey ? `✓ present (starts with: ${privateKey.slice(0, 30)}...)` : "✗ MISSING"
+  );
+
+  if (!projectId) {
+    throw new Error(
+      "[Firebase Admin] FIREBASE_PROJECT_ID (or NEXT_PUBLIC_FIREBASE_PROJECT_ID) is not set."
+    );
+  }
+
   if (clientEmail && privateKey) {
-    return initializeApp({
+    const app = initializeApp({
       credential: cert({
         projectId,
         clientEmail,
         privateKey,
       }),
     });
+    console.log("[Firebase Admin] Initialized with service account credentials ✓");
+    return app;
   }
 
-  // Fallback to application default credentials
-  return initializeApp({
-    projectId,
-  });
+  // Warn loudly — missing credentials will cause session cookie operations to fail
+  console.warn(
+    "[Firebase Admin] WARNING: FIREBASE_CLIENT_EMAIL or FIREBASE_PRIVATE_KEY is missing. " +
+      "Falling back to Application Default Credentials. " +
+      "Session cookie operations will likely FAIL unless running on GCP."
+  );
+
+  return initializeApp({ projectId });
 };
 
 const adminApp = initializeFirebaseAdmin();

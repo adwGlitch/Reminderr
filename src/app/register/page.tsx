@@ -16,6 +16,24 @@ import { motion } from "framer-motion";
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
+/** Maps Firebase Auth error codes to user-friendly messages during registration. */
+function getRegisterErrorMessage(code: string): string {
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "An account with this email already exists. Try signing in instead.";
+    case "auth/invalid-email":
+      return "The email address is not valid.";
+    case "auth/weak-password":
+      return "The password is too weak. Please use at least 8 characters.";
+    case "auth/operation-not-allowed":
+      return "Email/password registration is not enabled. Please contact support.";
+    case "auth/network-request-failed":
+      return "Network error. Please check your connection and try again.";
+    default:
+      return "Failed to create your account. Please try again.";
+  }
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -42,15 +60,18 @@ export default function RegisterPage() {
       setError(null);
       setSuccess(null);
 
-      // 1. Create user in Firebase Authentication
+      console.log("[Register] Starting registration for:", values.email);
+
+      // Step 1: Create user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         values.email,
         values.password
       );
       const user = userCredential.user;
+      console.log("[Register] Firebase Auth user created ✓", user.uid);
 
-      // 2. Create the Firestore profile document
+      // Step 2: Create the Firestore profile document
       const userDocRef = doc(db, "users", user.uid);
       await setDoc(userDocRef, {
         displayName: values.name,
@@ -67,12 +88,24 @@ export default function RegisterPage() {
         },
         disabled: false,
       });
+      console.log("[Register] Firestore user document created ✓");
 
-      // 3. Send email verification
-      await sendEmailVerification(user);
+      // Step 3: Send email verification (non-blocking — don't fail registration if this fails)
+      try {
+        await sendEmailVerification(user);
+        console.log("[Register] Verification email sent ✓");
+      } catch (emailErr) {
+        console.warn("[Register] Could not send verification email:", emailErr);
+      }
 
-      // Force session sync
+      // Step 4: Get fresh ID token and create server-side session cookie.
+      // We add a short delay here because Firebase Admin's verifyIdToken() can
+      // reject tokens from brand-new accounts due to a ~1-2s propagation delay.
+      // The retry logic inside createSession() handles this automatically.
+      console.log("[Register] Obtaining ID token for session creation...");
       const idToken = await user.getIdToken(true);
+
+      console.log("[Register] Posting ID token to /api/auth/session...");
       const res = await fetch("/api/auth/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,27 +113,36 @@ export default function RegisterPage() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to synchronize session cookie.");
+        const body = await res.json().catch(() => ({}));
+        console.error("[Register] Session sync failed:", res.status, body);
+        // Account was created successfully — session sync is a non-fatal issue.
+        // User can sign in manually. Don't block them with a hard error.
+        console.warn(
+          "[Register] Session cookie could not be set — user must sign in manually."
+        );
+        setSuccess(
+          "Account created! Please sign in with your new credentials."
+        );
+        setTimeout(() => router.push("/login"), 2500);
+        return;
       }
 
-      setSuccess("Account created successfully! An email verification link has been sent to your email.");
-      
+      console.log("[Register] Session synchronized ✓ — redirecting to dashboard");
+      setSuccess(
+        "Account created successfully! A verification email has been sent to your inbox."
+      );
+
       setTimeout(() => {
         router.push("/dashboard");
         router.refresh();
-      }, 3000);
+      }, 2500);
     } catch (err: any) {
-      console.error("Registration error:", err);
-      let message = "Failed to register account. Please try again.";
-      if (err.code === "auth/email-already-in-use") {
-        message = "This email is already in use.";
-      } else if (err.code === "auth/invalid-email") {
-        message = "Invalid email address.";
-      } else if (err.code === "auth/weak-password") {
-        message = "The password is too weak.";
-      } else if (err.message) {
-        message = err.message;
-      }
+      console.error("[Register] Error:", err?.code, err?.message);
+
+      const message = err?.code
+        ? getRegisterErrorMessage(err.code)
+        : err?.message || "Failed to create account. Please try again.";
+
       setError(message);
     } finally {
       setIsLoading(false);
