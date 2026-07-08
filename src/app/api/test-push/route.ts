@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMessaging } from "firebase-admin/messaging";
-import { adminApp, adminDb } from "@/firebase/admin";
+import { getAdminApp, getAdminDb } from "@/firebase/admin";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing userId" }, { status: 400 });
     }
 
+    const adminDb = getAdminDb();
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
       tokens: tokens,
     };
 
+    const adminApp = getAdminApp();
     const response = await getMessaging(adminApp).sendEachForMulticast(message);
     
     return NextResponse.json({ 

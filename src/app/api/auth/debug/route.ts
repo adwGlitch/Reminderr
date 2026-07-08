@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApps } from "firebase-admin/app";
-import { adminAuth } from "@/firebase/admin";
+import { getAdminAuth } from "@/firebase/admin";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
     // Test adminAuth operation
     try {
       logs.push("Calling adminAuth.listUsers...");
+      const adminAuth = getAdminAuth();
       const listUsersResult = await adminAuth.listUsers(1);
       logs.push(`listUsers succeeded ✓ found ${listUsersResult.users.length} users`);
     } catch (e: any) {
