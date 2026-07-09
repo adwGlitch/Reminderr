@@ -8,7 +8,8 @@ service cloud.firestore {
     function isSuperAdmin() { return request.auth.token.superAdmin == true; }
     
     function getGroupRole(groupId) {
-      return get(/databases/$(database)/documents/groupMembers/$(groupId + '_' + request.auth.uid)).data.role;
+      let memberDoc = get(/databases/$(database)/documents/groupMembers/$(groupId + '_' + request.auth.uid));
+      return memberDoc != null ? memberDoc.data.role : null;
     }
     function isGroupMember(groupId) {
       return getGroupRole(groupId) in ['owner', 'admin', 'member'];

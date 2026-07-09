@@ -2,7 +2,7 @@ import { initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
 import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions";
 
@@ -123,11 +123,8 @@ export const onMemberInvited = onDocumentCreated("invitations/{inviteId}", async
 export const checkDueReminders = onSchedule("*/15 * * * *", async (event) => {
   const now = new Date();
   const todayStr = now.toISOString().split("T")[0];
-  const hours = String(now.getHours()).padStart(2, "0");
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  const nowTimeStr = `${hours}:${minutes}`;
 
-  logger.info(`Running checkDueReminders scheduler at: ${todayStr} ${nowTimeStr}`);
+  logger.info(`Running checkDueReminders scheduler at: ${todayStr} ${now.toISOString()}`);
 
   // Query pending reminders due today
   const snapshot = await db
@@ -140,9 +137,18 @@ export const checkDueReminders = onSchedule("*/15 * * * *", async (event) => {
 
   snapshot.forEach((doc) => {
     const data = doc.data();
-    
-    // If there is a dueTime and it's approaching (e.g. matches exact time block)
-    if (data.dueTime && data.dueTime === nowTimeStr) {
+
+    // Check if reminder has a dueTime that falls within the current ±15 minute window.
+    // Exact-match comparison is fragile because scheduler fires may be off by seconds.
+    if (data.dueTime) {
+      const [dueHour, dueMinute] = data.dueTime.split(":").map(Number);
+      const dueMinutesFromMidnight = dueHour * 60 + dueMinute;
+      const nowMinutesFromMidnight = now.getHours() * 60 + now.getMinutes();
+      const diff = Math.abs(nowMinutesFromMidnight - dueMinutesFromMidnight);
+
+      // Only notify if the due time is within a 15-minute window of now
+      if (diff > 15) return;
+
       // Notify owner
       const p1 = db.collection("notifications").add({
         userId: data.ownerId,
@@ -155,7 +161,7 @@ export const checkDueReminders = onSchedule("*/15 * * * *", async (event) => {
       });
       promises.push(p1);
 
-      // Notify assignee if assigned
+      // Notify assignee if different from owner
       if (data.assignedTo && data.assignedTo !== data.ownerId) {
         const p2 = db.collection("notifications").add({
           userId: data.assignedTo,
@@ -175,12 +181,21 @@ export const checkDueReminders = onSchedule("*/15 * * * *", async (event) => {
   logger.info(`Due reminder checks completed. Processed ${promises.length} notifications.`);
 });
 
-// Helper validation for admin callables
-const assertAdmin = (context: any) => {
-  if (!context.auth) {
+// Helper: split an array into chunks of `size`
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
+// Helper validation for admin callables — typed for v2 CallableRequest
+const assertAdmin = (request: CallableRequest) => {
+  if (!request.auth) {
     throw new HttpsError("unauthenticated", "Authentication required");
   }
-  if (context.auth.token.superAdmin !== true) {
+  if (request.auth.token.superAdmin !== true) {
     throw new HttpsError("permission-denied", "Super Admin claims required");
   }
 };
@@ -247,6 +262,7 @@ export const disableUserCallable = onCall(async (request) => {
 });
 
 // 8. Callable: deleteGroup
+// Uses chunked batches to handle groups with > 500 members/reminders (Firestore batch limit)
 export const deleteGroupCallable = onCall(async (request) => {
   assertAdmin(request);
 
@@ -255,21 +271,29 @@ export const deleteGroupCallable = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Missing group ID");
   }
 
-  const batch = db.batch();
+  const BATCH_LIMIT = 499;
 
-  // 1. Delete group document
+  // 1. Collect all docs to delete
+  const [membersSnap, remindersSnap] = await Promise.all([
+    db.collection("groupMembers").where("groupId", "==", groupId).get(),
+    db.collection("reminders").where("groupId", "==", groupId).get(),
+  ]);
+
+  // Build a flat list of all refs to delete (group doc + members + reminders)
   const groupRef = db.collection("groups").doc(groupId);
-  batch.delete(groupRef);
+  const allRefs = [
+    groupRef,
+    ...membersSnap.docs.map((d) => d.ref),
+    ...remindersSnap.docs.map((d) => d.ref),
+  ];
 
-  // 2. Query and delete members
-  const membersSnap = await db.collection("groupMembers").where("groupId", "==", groupId).get();
-  membersSnap.forEach((doc) => batch.delete(doc.ref));
-
-  // 3. Query and delete reminders
-  const remindersSnap = await db.collection("reminders").where("groupId", "==", groupId).get();
-  remindersSnap.forEach((doc) => batch.delete(doc.ref));
-
-  await batch.commit();
+  // 2. Split into chunks of BATCH_LIMIT and commit each chunk
+  const chunks = chunkArray(allRefs, BATCH_LIMIT);
+  for (const chunk of chunks) {
+    const batch = db.batch();
+    chunk.forEach((ref) => batch.delete(ref));
+    await batch.commit();
+  }
 
   return { success: true };
 });

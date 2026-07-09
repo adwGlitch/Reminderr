@@ -2,9 +2,13 @@ import { initializeApp, getApps, getApp, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
+const ADMIN_APP_NAME = "admin";
+
 const initializeFirebaseAdmin = () => {
-  if (getApps().length > 0) {
-    return getApp();
+  // Return existing named app if already initialized (safe for Next.js hot-reload)
+  const existingApp = getApps().find((a) => a.name === ADMIN_APP_NAME);
+  if (existingApp) {
+    return existingApp;
   }
 
   const projectId =
@@ -19,7 +23,7 @@ const initializeFirebaseAdmin = () => {
   console.log("[Firebase Admin] clientEmail:", clientEmail ? "✓ present" : "✗ MISSING");
   console.log(
     "[Firebase Admin] privateKey:",
-    privateKey ? `✓ present (starts with: ${privateKey.slice(0, 30)}...)` : "✗ MISSING"
+    privateKey ? "✓ present" : "✗ MISSING"
   );
 
   if (!projectId) {
@@ -29,13 +33,16 @@ const initializeFirebaseAdmin = () => {
   }
 
   if (clientEmail && privateKey) {
-    const app = initializeApp({
-      credential: cert({
-        projectId,
-        clientEmail,
-        privateKey,
-      }),
-    });
+    const app = initializeApp(
+      {
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        }),
+      },
+      ADMIN_APP_NAME
+    );
     console.log("[Firebase Admin] Initialized with service account credentials ✓");
     return app;
   }
@@ -47,7 +54,7 @@ const initializeFirebaseAdmin = () => {
       "Session cookie operations will likely FAIL unless running on GCP."
   );
 
-  return initializeApp({ projectId });
+  return initializeApp({ projectId }, ADMIN_APP_NAME);
 };
 
 const adminApp = initializeFirebaseAdmin();

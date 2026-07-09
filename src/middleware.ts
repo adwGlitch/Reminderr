@@ -7,7 +7,7 @@ const SESSION_COOKIE_NAME = "remindsync_session";
 const protectedRoutes = ["/dashboard", "/calendar", "/groups", "/settings", "/admin"];
 const authRoutes = ["/login", "/register", "/forgot-password"];
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { nextUrl, cookies } = request;
   const session = cookies.get(SESSION_COOKIE_NAME)?.value;
 
