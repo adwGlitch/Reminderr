@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CheckCircle, Clock, Calendar, Users, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const dynamic = "force-dynamic";
 
@@ -7,8 +8,33 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-neutral-950 text-neutral-100 selection:bg-primary/30">
       {/* Background gradients */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none" />
+      <motion.div 
+        animate={{ 
+          y: [0, -50, 0],
+          x: [0, 30, 0],
+          scale: [1, 1.1, 1]
+        }}
+        transition={{ 
+          duration: 15, 
+          repeat: Infinity,
+          ease: "easeInOut" 
+        }}
+        className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none" 
+      />
+      <motion.div 
+        animate={{ 
+          y: [0, 50, 0],
+          x: [0, -40, 0],
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ 
+          duration: 18, 
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 2
+        }}
+        className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none" 
+      />
 
       {/* Hero Section */}
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 flex flex-col items-center text-center z-10 relative">
