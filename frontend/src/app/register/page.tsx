@@ -19,6 +19,8 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 /** Maps Firebase Auth error codes to user-friendly messages during registration. */
 function getRegisterErrorMessage(code: string): string {
   switch (code) {
+    case "auth/configuration-not-found":
+      return "Firebase Authentication is not enabled. Please enable it in the Firebase Console.";
     case "auth/email-already-in-use":
       return "An account with this email already exists. Try signing in instead.";
     case "auth/invalid-email":
@@ -128,7 +130,7 @@ export default function RegisterPage() {
         router.refresh();
       }, 2500);
     } catch (err: any) {
-      console.error("[Register] Error:", err?.code, err?.message);
+      console.warn("[Register] Error:", err?.code, err?.message);
 
       const message = err?.code
         ? getRegisterErrorMessage(err.code)

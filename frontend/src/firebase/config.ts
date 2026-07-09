@@ -12,6 +12,8 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "mock-app-id",
 };
 
+console.log("[FIREBASE CONFIG DEBUG] API Key:", firebaseConfig.apiKey);
+
 // Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
