@@ -9,6 +9,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
   doc,
   writeBatch,
   getDoc,
@@ -219,20 +220,25 @@ export function useGroups() {
   const deleteGroup = async (groupId: string) => {
     if (!user) throw new Error("Unauthenticated");
 
-    // Enforced in Firestore security rules & function call
-    // A cloud function 'deleteGroup' is optimal, but we will write client logic
-    // that performs client-side batch delete, or calls a Firebase Cloud function.
-    // For now, we will perform client-side deletion of the group, groupMembers, and reminders.
-    // Note: Enterprise apps should run in cloud functions, but we can do it in client side.
     const batch = writeBatch(db);
-    
+
+    // 1. Mark group document for deletion
     const groupRef = doc(db, "groups", groupId);
     batch.delete(groupRef);
 
-    // In a production app, we would query members and reminders to delete in a transaction,
-    // or trigger onGroupDelete Cloud Function.
-    // We will call the deleteGroup trigger or client-side batch.
-    await deleteDoc(groupRef);
+    // 2. Query and delete all groupMember records for this group
+    const membersSnap = await getDocs(
+      query(collection(db, "groupMembers"), where("groupId", "==", groupId))
+    );
+    membersSnap.forEach((memberDoc) => batch.delete(memberDoc.ref));
+
+    // 3. Query and delete all reminders belonging to this group
+    const remindersSnap = await getDocs(
+      query(collection(db, "reminders"), where("groupId", "==", groupId))
+    );
+    remindersSnap.forEach((reminderDoc) => batch.delete(reminderDoc.ref));
+
+    await batch.commit();
   };
 
   return {

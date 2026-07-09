@@ -18,6 +18,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 /** Maps Firebase Auth error codes to user-friendly messages. */
 function getAuthErrorMessage(code: string): string {
   switch (code) {
+    case "auth/configuration-not-found":
+      return "Firebase Authentication is not enabled. Please enable it in the Firebase Console.";
     // Firebase SDK v10+ merges user-not-found + wrong-password into this code
     case "auth/invalid-credential":
     case "auth/user-not-found":
@@ -95,7 +97,7 @@ export default function LoginForm() {
       router.push(redirectPath);
       router.refresh();
     } catch (err: any) {
-      console.error("[Login] Error:", err?.code, err?.message);
+      console.warn("[Login] Error:", err?.code, err?.message);
 
       // Firebase errors have an err.code; our thrown errors just have err.message
       const message = err?.code

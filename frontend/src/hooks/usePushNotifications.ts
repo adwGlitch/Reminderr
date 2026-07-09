@@ -16,6 +16,11 @@ export function usePushNotifications() {
 
     const requestPermissionAndGetToken = async () => {
       try {
+        // Guard: Notification API is browser-only — skip in SSR / non-browser environments
+        if (typeof window === "undefined" || !("Notification" in window)) {
+          return;
+        }
+
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
           setPermissionGranted(true);

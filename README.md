@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RemindSync
+
+An Enterprise Collaborative Reminder Platform built to manage personal reminders and shared group tasks in real-time. It features enterprise-grade security, instant synchronization, and elegant calendar views.
+
+## Features
+
+- **Personal & Group Reminders:** Create tasks for yourself or assign them to team members in shared groups.
+- **Real-Time Synchronization:** Uses Firebase Firestore for seamless real-time updates across all connected clients.
+- **Role-Based Access Control:** Invite members to groups with specific roles (Owner, Admin, Member) enforced by secure Firestore Rules.
+- **Automated Recurrence & Notifications:** Built-in Cloud Functions handle recurring tasks and push notifications for approaching deadlines.
+- **Admin Dashboard:** Super admins can view platform statistics and manage user accounts securely.
+- **Sleek UI:** Crafted with Next.js App Router, TailwindCSS v4, Framer Motion, and Lucide React.
+
+## Tech Stack
+
+- **Frontend Framework:** [Next.js 15](https://nextjs.org) (App Router)
+- **Styling:** [TailwindCSS v4](https://tailwindcss.com/) & [Framer Motion](https://www.framer.com/motion/)
+- **State Management:** [Zustand](https://zustand-demo.pmnd.rs/)
+- **Forms & Validation:** [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+- **Backend & Database:** [Firebase](https://firebase.google.com/) (Auth, Firestore, Cloud Functions, Cloud Messaging)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+1. Node.js 20+
+2. A Firebase project with Firestore, Authentication (Email/Password), and Cloud Functions enabled.
+
+### Installation
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Run the development server:
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Deploying Firebase Functions & Rules
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Navigate to the `functions` directory to install dependencies and deploy the backend infrastructure:
 
-## Learn More
+```bash
+cd functions
+npm install
+cd ..
+firebase deploy --only firestore:rules,firestore:indexes,functions
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Security & Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+RemindSync uses a hybrid authentication model:
+- **Client-Side Auth:** Firebase Client SDK manages local state and real-time listeners.
+- **Server-Side Sessions:** A Next.js Middleware protects routes using Firebase Admin session cookies to eliminate unauthenticated flashes on initial page load.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.

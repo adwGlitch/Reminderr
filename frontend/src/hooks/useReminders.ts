@@ -31,23 +31,20 @@ export function useReminders(groupId: string | null = null) {
 
     setIsLoading(true);
 
-    // Build firestore query
-    let q = query(
-      collection(db, "reminders"),
-      where("ownerId", "==", user.uid),
-      where("groupId", "==", groupId)
-    );
+    // Build firestore query based on context
+    // If groupId is set, fetch all reminders for that group (security rules govern visibility).
+    // Otherwise fetch personal reminders owned by the current user.
+    const q = groupId
+      ? query(
+          collection(db, "reminders"),
+          where("groupId", "==", groupId)
+        )
+      : query(
+          collection(db, "reminders"),
+          where("ownerId", "==", user.uid),
+          where("groupId", "==", null)
+        );
 
-    // If it is a group reminder query, we also want to fetch reminders assigned to the user
-    // note: firestore doesn't easily support OR queries without separate query merges in SDK,
-    // or standard rules. Let's do a simple check. If groupId is set, we fetch all reminders for that group.
-    // In that case, security rules will govern who can read them.
-    if (groupId) {
-      q = query(
-        collection(db, "reminders"),
-        where("groupId", "==", groupId)
-      );
-    }
 
     const unsubscribe = onSnapshot(
       q,
@@ -102,6 +99,7 @@ export function useReminders(groupId: string | null = null) {
 
     const newReminder = {
       ...data,
+      groupId: data.groupId || null,
       ownerId: user.uid,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
