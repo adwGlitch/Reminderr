@@ -115,9 +115,16 @@ export default function RegisterPage() {
       });
 
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
+        let body: any = {};
+        let rawText = "";
+        try {
+          rawText = await res.text();
+          body = JSON.parse(rawText);
+        } catch (e) {
+          console.error("Failed to parse response as JSON. Raw text:", rawText);
+        }
         console.error("[Register] Session sync failed:", res.status, body);
-        throw new Error(body.error || "Failed to synchronize session cookie.");
+        throw new Error(body.error || `Failed to synchronize session cookie (HTTP ${res.status}): ${rawText.substring(0, 100)}`);
       }
 
       console.log("[Register] Session synchronized ✓ — redirecting to dashboard");
