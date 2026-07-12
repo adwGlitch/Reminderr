@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import { getAdminStats, toggleUserStatus, deleteGroup } from "@/app/actions/admin";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import {
   Users as UsersIcon,
   FolderOpen,
@@ -19,7 +18,7 @@ import {
   RefreshCw,
   BarChart3,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+
 
 export function AdminPanel() {
   const [activeTab, setActiveTab] = useState<"users" | "groups" | "reminders" | "analytics">("analytics");

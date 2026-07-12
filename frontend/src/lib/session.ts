@@ -30,8 +30,28 @@ export async function createSession(idToken: string): Promise<{ success: boolean
     const adminAuth = getAdminAuth();
 
     // verifyIdToken: local crypto check using cached Google public keys.
-    // Only makes a network call once to fetch public keys, then caches them.
-    const decoded = await adminAuth.verifyIdToken(idToken);
+    // We add a retry loop because tokens from brand-new accounts can be rejected
+    // initially due to a ~1-2s propagation delay in Firebase.
+    let decoded;
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      try {
+        decoded = await adminAuth.verifyIdToken(idToken);
+        break; // Success
+      } catch (err: any) {
+        attempts++;
+        if (attempts >= maxAttempts) throw err;
+        console.warn(`[Session] Token verification attempt ${attempts} failed (${err?.code}). Retrying in 1s...`);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
+    if (!decoded) {
+      throw new Error("Failed to decode token after retries");
+    }
+
     console.log("[Session] Token verified ✓ uid:", decoded.uid);
 
     const cookieData: CookieData = {

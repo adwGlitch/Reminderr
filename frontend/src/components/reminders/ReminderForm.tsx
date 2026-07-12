@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { reminderSchema } from "@/lib/validation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Reminder, Priority, Recurrence } from "@/types";
+import { Reminder } from "@/types";
 import { z } from "zod";
 import { X } from "lucide-react";
 

@@ -13,11 +13,10 @@ import {
   doc,
   writeBatch,
   getDoc,
-  setDoc,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Group, GroupMember, GroupInvitation, UserProfile } from "@/types";
+import { Group, GroupMember, GroupInvitation } from "@/types";
 
 export function useGroups() {
   const { user } = useAuthStore();
@@ -88,7 +87,7 @@ export function useGroups() {
     // 2. Listen to pending invitations matching user email
     const qInvitations = query(
       collection(db, "invitations"),
-      where("email", "==", user.email.toLowerCase()),
+      where("email", "==", user.email || ""),
       where("status", "==", "pending")
     );
 

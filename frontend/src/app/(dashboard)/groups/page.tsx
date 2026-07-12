@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useGroups } from "@/hooks/useGroups";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Plus, Users, Mail, ArrowRight, X, Sparkles } from "lucide-react";
+import { Plus, Users, ArrowRight, X, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -49,11 +49,11 @@ export default function GroupsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Collaborative Groups</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Collaborative Groups</h1>
           <p className="text-sm text-neutral-400 mt-1">
             Create groups, invite team members, and manage shared reminders.
           </p>
@@ -80,7 +80,7 @@ export default function GroupsPage() {
                 <motion.div
                   key={invite.id}
                   layout
-                  className="glass border-amber-500/35 bg-amber-500/5 rounded-2xl p-4 flex items-center justify-between gap-4"
+                  className="glass border-amber-500/35 bg-amber-500/5 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
                 >
                   <div>
                     <h4 className="font-bold text-sm text-neutral-100">{invite.groupName}</h4>
@@ -88,7 +88,7 @@ export default function GroupsPage() {
                       Invited by <span className="text-neutral-300 font-semibold">{invite.invitedByName}</span>
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 self-end sm:self-auto">
                     <Button
                       variant="ghost"
                       onClick={() => declineInvitation(invite.id!)}

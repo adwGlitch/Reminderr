@@ -1,6 +1,6 @@
 "use client";
 
-import { Reminder, Priority, Recurrence } from "@/types";
+import { Reminder } from "@/types";
 import { Edit2, Trash2, Calendar, Clock, RefreshCw, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -10,7 +10,6 @@ interface ReminderCardProps {
   onToggleStatus: () => Promise<void>;
   onEdit: () => void;
   onDelete: () => Promise<void>;
-  showAssignee?: boolean;
 }
 
 export function ReminderCard({
@@ -18,7 +17,6 @@ export function ReminderCard({
   onToggleStatus,
   onEdit,
   onDelete,
-  showAssignee,
 }: ReminderCardProps) {
   const [isToggling, setIsToggling] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -79,7 +77,7 @@ export function ReminderCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className={`glass rounded-xl p-4 border transition-all hover:translate-y-[-2px] hover:shadow-lg ${
+      className={`glass rounded-xl p-3 sm:p-4 border transition-all hover:translate-y-[-2px] hover:shadow-lg ${
         isCompleted ? "border-border/40 opacity-60" : overdue ? "border-red-500/30 bg-red-950/5" : "border-border"
       }`}
     >
@@ -105,7 +103,7 @@ export function ReminderCard({
 
         {/* Details */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-2 sm:gap-4">
             <h4
               className={`font-semibold text-sm leading-tight truncate ${
                 isCompleted ? "line-through text-neutral-500" : "text-neutral-100"

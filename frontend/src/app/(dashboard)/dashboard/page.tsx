@@ -1,13 +1,12 @@
 "use client";
 
-import { useAuthStore } from "@/store/useAuthStore";
+
 import { useReminders } from "@/hooks/useReminders";
 import { ReminderList } from "@/components/reminders/ReminderList";
 import { CheckSquare, Clock, AlertTriangle, CalendarDays, Award } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function DashboardPage() {
-  const { user } = useAuthStore();
   const { reminders, isLoading } = useReminders(null); // Personal reminders (groupId is null)
 
   const getStats = () => {
@@ -88,10 +87,10 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Welcome Banner */}
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Personal Workspace</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Personal Workspace</h1>
         <p className="text-sm text-neutral-400 mt-1">
           Manage your personal reminders and keep track of your schedule.
         </p>
@@ -107,18 +106,18 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
               key={item.name}
-              className={`glass rounded-2xl p-4 border flex items-center justify-between gap-4 ${item.bg}`}
+              className={`glass rounded-2xl p-3 sm:p-4 border flex items-start sm:items-center justify-between gap-2 sm:gap-4 ${item.bg}`}
             >
-              <div>
-                <p className="text-xs font-semibold text-neutral-400 select-none uppercase tracking-wider">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-semibold text-neutral-400 select-none uppercase tracking-wider leading-tight line-clamp-2">
                   {item.name}
                 </p>
-                <h3 className={`text-2xl font-bold mt-1 ${item.color} ${item.animate || ""}`}>
+                <h3 className={`text-xl sm:text-2xl font-bold mt-1 sm:mt-1.5 ${item.color} ${item.animate || ""}`}>
                   {isLoading ? "..." : item.value}
                 </h3>
               </div>
-              <div className={`p-2 bg-neutral-950/40 rounded-xl border border-border/55`}>
-                <Icon className={`w-5 h-5 ${item.color}`} />
+              <div className={`p-1.5 sm:p-2 bg-neutral-950/40 rounded-xl border border-border/55 shrink-0`}>
+                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${item.color}`} />
               </div>
             </motion.div>
           );
@@ -129,7 +128,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
         {/* Left Col: Lists */}
         <div className="xl:col-span-2 space-y-6">
-          <div className="glass p-6 rounded-2xl border border-border">
+          <div className="glass p-4 sm:p-6 rounded-2xl border border-border">
             <h2 className="text-lg font-bold mb-4">My Reminders</h2>
             <ReminderList />
           </div>
@@ -138,7 +137,7 @@ export default function DashboardPage() {
         {/* Right Col: Quick Widgets */}
         <div className="space-y-6">
           {/* Motivation Widget */}
-          <div className="glass p-6 rounded-2xl border border-border flex gap-4 items-start bg-gradient-to-br from-neutral-900/60 to-neutral-950">
+          <div className="glass p-4 sm:p-6 rounded-2xl border border-border flex gap-4 items-start bg-gradient-to-br from-neutral-900/60 to-neutral-950">
             <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-primary">
               <Award className="w-5 h-5" />
             </div>
@@ -153,7 +152,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Today Summary Widget */}
-          <div className="glass p-6 rounded-2xl border border-border space-y-4">
+          <div className="glass p-4 sm:p-6 rounded-2xl border border-border space-y-4">
             <h3 className="font-bold text-sm text-neutral-300">Today&apos;s Focus</h3>
             <div className="space-y-2.5">
               {isLoading ? (

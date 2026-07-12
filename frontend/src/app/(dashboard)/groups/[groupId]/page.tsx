@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useGroupDetails } from "@/hooks/useGroupDetails";
 import { ReminderList } from "@/components/reminders/ReminderList";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +14,6 @@ import {
   ArrowLeft,
   Crown,
   Trash2,
-  Mail,
   X,
   UserMinus,
   Briefcase,
@@ -28,6 +28,7 @@ interface PageProps {
 
 export default function GroupDetailPage({ params }: PageProps) {
   const { groupId } = use(params);
+  const router = useRouter();
   const {
     group,
     members,
@@ -37,6 +38,7 @@ export default function GroupDetailPage({ params }: PageProps) {
     inviteMember,
     changeMemberRole,
     removeMember,
+    deleteGroup,
   } = useGroupDetails(groupId);
 
   const [activeTab, setActiveTab] = useState<"reminders" | "members" | "settings">("reminders");
@@ -130,14 +132,14 @@ export default function GroupDetailPage({ params }: PageProps) {
     }));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Header Info */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between sm:items-start border-b border-border/60 pb-6">
         <div className="space-y-2">
           <Link href="/groups" className="inline-flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-300">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to groups
           </Link>
-          <h1 className="text-3xl font-extrabold tracking-tight">{group.name}</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{group.name}</h1>
           {group.description && <p className="text-sm text-neutral-400 max-w-2xl">{group.description}</p>}
         </div>
 
@@ -151,10 +153,10 @@ export default function GroupDetailPage({ params }: PageProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-border/80 text-sm overflow-x-auto select-none">
+      <div className="flex gap-0 border-b border-border/80 text-sm overflow-x-auto select-none">
         <button
           onClick={() => setActiveTab("reminders")}
-          className={`px-5 py-2.5 font-medium border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+          className={`flex-shrink-0 whitespace-nowrap px-5 py-2.5 font-medium border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "reminders"
               ? "border-primary text-primary font-bold"
               : "border-transparent text-neutral-400 hover:text-neutral-200"
@@ -164,7 +166,7 @@ export default function GroupDetailPage({ params }: PageProps) {
         </button>
         <button
           onClick={() => setActiveTab("members")}
-          className={`px-5 py-2.5 font-medium border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+          className={`flex-shrink-0 whitespace-nowrap px-5 py-2.5 font-medium border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "members"
               ? "border-primary text-primary font-bold"
               : "border-transparent text-neutral-400 hover:text-neutral-200"
@@ -178,7 +180,7 @@ export default function GroupDetailPage({ params }: PageProps) {
               setActiveTab("settings");
               startEditing();
             }}
-            className={`px-5 py-2.5 font-medium border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            className={`flex-shrink-0 whitespace-nowrap px-5 py-2.5 font-medium border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "settings"
                 ? "border-primary text-primary font-bold"
                 : "border-transparent text-neutral-400 hover:text-neutral-200"
@@ -196,20 +198,20 @@ export default function GroupDetailPage({ params }: PageProps) {
         )}
 
         {activeTab === "members" && (
-          <div className="glass border-border rounded-2xl overflow-hidden">
-            <table className="w-full text-left text-sm">
+          <div className="glass border-border rounded-2xl overflow-hidden overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-neutral-900/40 text-xs font-bold uppercase tracking-wider text-neutral-400 border-b border-border">
                 <tr>
-                  <th className="px-6 py-4">Member</th>
-                  <th className="px-6 py-4">Email</th>
-                  <th className="px-6 py-4">Role</th>
-                  {isAdminOrOwner && <th className="px-6 py-4 text-right">Actions</th>}
+                  <th className="px-3 py-3 sm:px-6 sm:py-4">Member</th>
+                  <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4">Email</th>
+                  <th className="px-3 py-3 sm:px-6 sm:py-4">Role</th>
+                  {isAdminOrOwner && <th className="px-3 py-3 sm:px-6 sm:py-4 text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
                 {members.map((member) => (
                   <tr key={member.id} className="hover:bg-neutral-900/10">
-                    <td className="px-6 py-4 flex items-center gap-3">
+                    <td className="px-3 py-3 sm:px-6 sm:py-4 flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-neutral-800 border border-border flex items-center justify-center overflow-hidden">
                         {member.userProfile?.avatarUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -226,8 +228,8 @@ export default function GroupDetailPage({ params }: PageProps) {
                         {member.userProfile?.displayName || "Loading..."}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400">{member.userProfile?.email}</td>
-                    <td className="px-6 py-4">
+                    <td className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4 text-neutral-400">{member.userProfile?.email}</td>
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
                       {isOwner && member.userId !== group.ownerId ? (
                         <select
                           value={member.role}
@@ -252,7 +254,7 @@ export default function GroupDetailPage({ params }: PageProps) {
                       )}
                     </td>
                     {isAdminOrOwner && (
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-3 py-3 sm:px-6 sm:py-4 text-right">
                         {member.userId !== group.ownerId && (
                           <button
                             onClick={async () => {
@@ -319,7 +321,20 @@ export default function GroupDetailPage({ params }: PageProps) {
                 <p className="text-xs text-neutral-400 leading-relaxed">
                   Deleting this group is permanent and will delete all group reminders, member assignments, and settings.
                 </p>
-                <Button variant="danger" className="w-full text-xs">
+                <Button
+                  variant="danger"
+                  className="w-full text-xs"
+                  onClick={async () => {
+                    if (confirm("Are you sure? This will permanently delete the group and all its reminders. This cannot be undone.")) {
+                      try {
+                        await deleteGroup(groupId);
+                        router.push("/groups");
+                      } catch (err: any) {
+                        alert(err.message || "Failed to delete group.");
+                      }
+                    }
+                  }}
+                >
                   Delete Group
                 </Button>
               </div>

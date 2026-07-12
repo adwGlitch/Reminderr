@@ -11,7 +11,8 @@ import {
   updateDoc,
   deleteDoc,
   addDoc,
-  setDoc,
+  getDocs,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -142,6 +143,29 @@ export function useGroupDetails(groupId: string) {
     await deleteDoc(memberRef);
   };
 
+  const deleteGroup = async () => {
+    if (myRole !== "owner") throw new Error("Only the group owner can delete this group.");
+
+    const batch = writeBatch(db);
+
+    // Delete group document
+    batch.delete(doc(db, "groups", groupId));
+
+    // Delete all groupMember records
+    const membersSnap = await getDocs(
+      query(collection(db, "groupMembers"), where("groupId", "==", groupId))
+    );
+    membersSnap.forEach((m) => batch.delete(m.ref));
+
+    // Delete all reminders belonging to this group
+    const remindersSnap = await getDocs(
+      query(collection(db, "reminders"), where("groupId", "==", groupId))
+    );
+    remindersSnap.forEach((r) => batch.delete(r.ref));
+
+    await batch.commit();
+  };
+
   return {
     group,
     members,
@@ -151,5 +175,6 @@ export function useGroupDetails(groupId: string) {
     inviteMember,
     changeMemberRole,
     removeMember,
+    deleteGroup,
   };
 }

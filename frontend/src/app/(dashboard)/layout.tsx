@@ -15,10 +15,6 @@ import {
   Shield,
   LogOut,
   User,
-  CheckSquare,
-  Clock,
-  CalendarDays,
-  AlertTriangle,
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -79,14 +75,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex h-screen bg-neutral-950 text-neutral-100 overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-border bg-neutral-900/50 backdrop-blur-md">
-        <div className="h-16 flex items-center px-6 border-b border-border">
-          <Link href="/dashboard" className="font-heading text-xl tracking-tight bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500 bg-clip-text text-transparent">
-            RemindSync
+      <aside className="group hidden md:flex flex-col w-16 hover:w-64 border-r border-border bg-neutral-900/50 backdrop-blur-md transition-[width] duration-300 ease-in-out z-30 flex-shrink-0 overflow-hidden">
+        <div className="h-16 flex items-center px-4 border-b border-border overflow-hidden flex-shrink-0">
+          <Link href="/dashboard" className="flex items-center gap-3 w-full">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold font-heading text-xs">RS</span>
+            </div>
+            <span className="font-heading text-xl tracking-tight bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500 bg-clip-text text-transparent whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              RemindSync
+            </span>
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto overflow-x-hidden">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
@@ -94,11 +95,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all-fast relative group ${
+                className={`flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all-fast relative group/item ${
                   active
                     ? "bg-neutral-800 text-white font-semibold"
                     : "text-neutral-400 hover:text-white hover:bg-neutral-900"
                 }`}
+                title={item.name}
               >
                 {active && (
                   <motion.div
@@ -107,17 +109,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
                 )}
-                <Icon className={`w-4 h-4 ${active ? "text-primary" : "text-neutral-400 group-hover:text-white"}`} />
-                {item.name}
+                <Icon className={`w-5 h-5 flex-shrink-0 ml-0.5 ${active ? "text-primary" : "text-neutral-400 group-hover/item:text-white"}`} />
+                <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {item.name}
+                </span>
               </Link>
             );
           })}
         </nav>
 
         {/* User profile footer */}
-        <div className="p-4 border-t border-border flex items-center justify-between">
-          <Link href="/settings" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-full bg-neutral-800 border border-border flex items-center justify-center overflow-hidden">
+        <div className="p-3 border-t border-border flex items-center justify-between overflow-hidden flex-shrink-0">
+          <Link href="/settings" className="flex items-center gap-3 group/profile">
+            <div className="w-9 h-9 rounded-full bg-neutral-800 border border-border flex items-center justify-center overflow-hidden flex-shrink-0 ml-0.5">
               {user.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
@@ -125,8 +129,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <User className="w-5 h-5 text-neutral-500" />
               )}
             </div>
-            <div className="max-w-[120px]">
-              <p className="text-xs font-semibold text-neutral-200 truncate group-hover:text-white transition-colors">
+            <div className="max-w-[120px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+              <p className="text-xs font-semibold text-neutral-200 truncate group-hover/profile:text-white transition-colors">
                 {user.displayName}
               </p>
               <p className="text-[10px] text-neutral-500 truncate">{user.email}</p>
@@ -134,7 +138,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </Link>
           <button
             onClick={handleLogout}
-            className="p-1.5 text-neutral-500 hover:text-red-400 rounded-lg hover:bg-neutral-800 transition-all cursor-pointer"
+            className="p-1.5 text-neutral-500 hover:text-red-400 rounded-lg hover:bg-neutral-800 transition-all cursor-pointer opacity-0 group-hover:opacity-100 flex-shrink-0 mr-1"
             title="Sign Out"
           >
             <LogOut className="w-4 h-4" />
@@ -145,7 +149,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Header */}
-        <header className="h-16 border-b border-border bg-neutral-900/50 backdrop-blur-md flex items-center justify-between px-4 sm:px-6">
+        <header className="h-16 border-b border-border bg-neutral-900/50 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 relative z-30">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -180,7 +184,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-2 w-80 glass rounded-xl shadow-2xl z-50 py-2 border border-border"
+                      className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-neutral-900 rounded-xl shadow-2xl z-50 py-2 border border-border"
                     >
                       <div className="px-4 py-2 border-b border-border flex justify-between items-center">
                         <span className="font-bold text-sm">Notifications</span>
@@ -239,7 +243,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-2 w-48 glass rounded-xl shadow-2xl z-50 py-1 border border-border"
+                      className="absolute right-0 mt-2 w-48 bg-neutral-900 rounded-xl shadow-2xl z-50 py-1 border border-border"
                     >
                       <Link
                         href="/settings"

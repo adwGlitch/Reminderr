@@ -75,3 +75,26 @@ body {
 .transition-all-fast {
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Hide scrollbar for tab containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Ensure touch targets are at least 44x44px on mobile */
+@media (max-width: 640px) {
+  select, input[type="date"], input[type="time"] {
+    min-height: 44px;
+  }
+}

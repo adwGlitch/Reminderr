@@ -39,20 +39,20 @@ export default function Home() {
       />
 
       {/* Hero Section */}
-      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 flex flex-col items-center text-center z-10 relative">
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24 flex flex-col items-center text-center z-10 relative">
         
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-neutral-900/50 backdrop-blur-md mb-8">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-xs font-medium text-neutral-300">Welcome to RemindSync</span>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-br from-white to-neutral-400 bg-clip-text text-transparent">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-br from-white to-neutral-400 bg-clip-text text-transparent">
           Master Your Time, <br className="hidden md:block" />
           <span className="text-primary">Effortlessly.</span>
         </h1>
         
-        <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-10 leading-relaxed">
-          RemindSync is a premium, real-time task management ecosystem. Whether you're organizing your personal life or coordinating with a team, stay on top of everything without the friction.
+        <p className="text-base sm:text-lg md:text-xl text-neutral-400 max-w-2xl mb-10 leading-relaxed">
+          RemindSync is a premium, real-time task management ecosystem. Whether you&apos;re organizing your personal life or coordinating with a team, stay on top of everything without the friction.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
@@ -73,7 +73,7 @@ export default function Home() {
         </div>
 
         {/* Feature Highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-32 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16 sm:mt-32 w-full">
           {[
             {
               icon: Clock,
@@ -98,7 +98,7 @@ export default function Home() {
           ].map((feature, i) => {
             const Icon = feature.icon;
             return (
-              <div key={i} className="glass p-6 rounded-3xl border border-border flex flex-col items-start text-left hover:border-primary/50 transition-colors">
+              <div key={i} className="glass p-4 sm:p-6 rounded-3xl border border-border flex flex-col items-start text-left hover:border-primary/50 transition-colors">
                 <div className="p-3 bg-neutral-900 rounded-2xl border border-border mb-4">
                   <Icon className="w-6 h-6 text-primary" />
                 </div>

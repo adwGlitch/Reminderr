@@ -10,12 +10,10 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  serverTimestamp,
-  orderBy,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Reminder, Priority, Recurrence } from "@/types";
+import { Reminder } from "@/types";
 
 export function useReminders(groupId: string | null = null) {
   const { user } = useAuthStore();

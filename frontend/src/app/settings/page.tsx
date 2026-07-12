@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { db, auth } from "@/firebase/config";
 import { useAuthStore } from "@/store/useAuthStore";
 import { profileSchema } from "@/lib/validation";
@@ -116,7 +116,7 @@ export default function SettingsPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <main className="max-w-4xl mx-auto px-4 py-4 sm:py-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Sidebar Info */}
           <div className="space-y-6">
@@ -148,7 +148,7 @@ export default function SettingsPage() {
               <h3 className="font-bold text-sm text-neutral-400 flex items-center gap-2">
                 <BarChart2 className="w-4 h-4 text-primary" /> Statistics
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div className="bg-neutral-900/50 border border-border rounded-xl p-3 text-center">
                   <div className="text-2xl font-bold text-blue-500">
                     {user.stats?.total || 0}

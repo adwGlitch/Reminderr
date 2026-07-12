@@ -5,8 +5,8 @@ import { useReminders } from "@/hooks/useReminders";
 import { ReminderCard } from "@/components/reminders/ReminderCard";
 import { ReminderForm } from "@/components/reminders/ReminderForm";
 import { Reminder, Priority } from "@/types";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, AlertCircle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 
 export default function CalendarPage() {
   const { reminders, toggleReminderStatus, updateReminder, deleteReminder } = useReminders(null);
@@ -101,10 +101,10 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 py-4 sm:px-6 sm:py-8 lg:px-8 space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Interactive Calendar</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Interactive Calendar</h1>
         <p className="text-sm text-neutral-400 mt-1">
           Review personal and collaborative reminders in a month-based planner format.
         </p>
@@ -112,7 +112,7 @@ export default function CalendarPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Calendar Grid */}
-        <div className="lg:col-span-2 glass border-border p-6 rounded-2xl space-y-6">
+        <div className="lg:col-span-2 glass border-border p-3 sm:p-6 rounded-2xl space-y-6">
           {/* Calendar Header Navigation */}
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-neutral-200">
@@ -141,7 +141,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Weekday Labels */}
-          <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-neutral-500 select-none uppercase tracking-wider">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-semibold text-neutral-500 select-none uppercase tracking-wider">
             <div>Sun</div>
             <div>Mon</div>
             <div>Tue</div>
@@ -152,7 +152,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Days Grid */}
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {days.map((day, idx) => {
               const dayReminders = remindersMap[day.dateStr] || [];
               const isSelected = selectedDate === day.dateStr;
@@ -162,7 +162,7 @@ export default function CalendarPage() {
                 <div
                   key={idx}
                   onClick={() => setSelectedDate(day.dateStr)}
-                  className={`min-h-[72px] p-1.5 border rounded-xl flex flex-col justify-between transition-all cursor-pointer select-none ${
+                  className={`min-h-[48px] sm:min-h-[72px] p-1 sm:p-1.5 border rounded-xl flex flex-col justify-between transition-all cursor-pointer select-none ${
                     day.isCurrentMonth ? "bg-neutral-900/10" : "opacity-35"
                   } ${
                     isSelected
@@ -198,7 +198,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Selected Date Reminders Sidebar */}
-        <div className="glass border-border p-6 rounded-2xl space-y-6">
+        <div className="glass border-border p-4 sm:p-6 rounded-2xl space-y-6">
           <div className="flex items-center gap-2 text-neutral-300 font-bold border-b border-border/85 pb-4">
             <CalendarIcon className="w-5 h-5 text-primary" />
             <h3>
@@ -212,7 +212,7 @@ export default function CalendarPage() {
             </h3>
           </div>
 
-          <div className="space-y-4 max-h-[450px] overflow-y-auto pr-1">
+          <div className="space-y-4 max-h-[300px] sm:max-h-[450px] overflow-y-auto pr-1">
             {selectedDayReminders.length === 0 ? (
               <div className="text-center py-12 text-neutral-500 text-xs">
                 <Clock className="w-6 h-6 mx-auto mb-2 text-neutral-600" />

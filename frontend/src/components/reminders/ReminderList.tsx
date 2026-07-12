@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useReminders } from "@/hooks/useReminders";
 import { ReminderCard } from "./ReminderCard";
 import { ReminderForm } from "./ReminderForm";
-import { Reminder, Priority, Recurrence } from "@/types";
+import { Reminder } from "@/types";
 import { Button } from "@/components/ui/Button";
-import { Plus, Search, Filter, SortAsc, Calendar, ShieldAlert } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Search, Filter, SortAsc, Calendar } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 
 interface ReminderListProps {
   groupId?: string | null;
@@ -129,7 +129,7 @@ export function ReminderList({ groupId = null, groupMembers = [] }: ReminderList
   return (
     <div className="space-y-6">
       {/* Search & Actions Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-neutral-900/40 p-4 rounded-2xl border border-border">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-border">
         {/* Search */}
         <div className="relative w-full sm:max-w-xs">
           <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-3" />
@@ -203,10 +203,10 @@ export function ReminderList({ groupId = null, groupMembers = [] }: ReminderList
             placeholder="Quick add: title and press enter..."
             value={quickTitle}
             onChange={(e) => setQuickTitle(e.target.value)}
-            className="flex-1 bg-transparent px-3 py-2 text-sm text-neutral-100 placeholder-neutral-600 focus:outline-none"
+            className="flex-1 min-w-0 bg-transparent px-3 py-2 text-sm text-neutral-100 placeholder-neutral-600 focus:outline-none"
           />
-          <Button type="submit" variant="ghost" className="h-8 px-3 rounded-lg text-xs hover:bg-neutral-800">
-            Press Enter
+          <Button type="submit" variant="ghost" className="h-8 px-3 rounded-lg text-xs hover:bg-neutral-800 shrink-0 whitespace-nowrap">
+            Add
           </Button>
         </form>
       )}
@@ -225,7 +225,7 @@ export function ReminderList({ groupId = null, groupMembers = [] }: ReminderList
             <p className="text-xs text-neutral-600 mt-1">Get started by creating a reminder.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <AnimatePresence mode="popLayout">
               {sortedReminders.map((reminder) => (
                 <ReminderCard
