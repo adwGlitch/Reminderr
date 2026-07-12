@@ -27,6 +27,8 @@ export function getAdminApp() {
     // Strip surrounding quotes if present (which happens if pasted with quotes on Vercel)
     if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
       privateKey = privateKey.slice(1, -1);
+    } else if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
+      privateKey = privateKey.slice(1, -1);
     }
     privateKey = privateKey.replace(/\\n/g, "\n");
   }
@@ -41,27 +43,26 @@ export function getAdminApp() {
   }
 
   if (clientEmail && privateKey) {
-    adminApp = initializeApp(
-      {
-        credential: cert({
-          projectId,
-          clientEmail,
-          privateKey,
-        }),
-      },
-      ADMIN_APP_NAME
-    );
-    console.log("[Firebase Admin] Initialized with service account credentials ✓");
-    return adminApp;
+    try {
+      adminApp = initializeApp(
+        {
+          credential: cert({
+            projectId,
+            clientEmail,
+            privateKey,
+          }),
+        },
+        ADMIN_APP_NAME
+      );
+      console.log("[Firebase Admin] Initialized with service account credentials ✓");
+      return adminApp;
+    } catch (certError: any) {
+      console.error("[Firebase Admin] cert() threw an error:", certError.message);
+      throw new Error(`Firebase Admin cert() failed: ${certError.message}`);
+    }
   }
 
-  console.warn(
-    "[Firebase Admin] WARNING: FIREBASE_CLIENT_EMAIL or FIREBASE_PRIVATE_KEY is missing. " +
-    "Falling back to Application Default Credentials. Session cookie operations will likely FAIL unless running on GCP."
-  );
-
-  adminApp = initializeApp({ projectId }, ADMIN_APP_NAME);
-  return adminApp;
+  throw new Error("FIREBASE_CLIENT_EMAIL or FIREBASE_PRIVATE_KEY is missing! Vercel environment variables are not loaded correctly.");
 }
 
 export function getAdminAuth() {

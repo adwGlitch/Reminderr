@@ -11,9 +11,16 @@ import { AnimatePresence } from "framer-motion";
 export default function CalendarPage() {
   const { reminders, toggleReminderStatus, updateReminder, deleteReminder } = useReminders(null);
   
+  const toLocalISOString = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(
-    new Date().toISOString().split("T")[0]
+    toLocalISOString(new Date())
   );
   
   const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
@@ -47,7 +54,7 @@ export default function CalendarPage() {
     for (let i = firstDayIndex - 1; i >= 0; i--) {
       const prevDate = new Date(year, month - 1, totalPrevDays - i);
       daysArray.push({
-        dateStr: prevDate.toISOString().split("T")[0],
+        dateStr: toLocalISOString(prevDate),
         dayNum: totalPrevDays - i,
         isCurrentMonth: false,
       });
@@ -57,7 +64,7 @@ export default function CalendarPage() {
     for (let i = 1; i <= totalDays; i++) {
       const currDate = new Date(year, month, i);
       daysArray.push({
-        dateStr: currDate.toISOString().split("T")[0],
+        dateStr: toLocalISOString(currDate),
         dayNum: i,
         isCurrentMonth: true,
       });
@@ -68,7 +75,7 @@ export default function CalendarPage() {
     for (let i = 1; i <= remainingDays; i++) {
       const nextDate = new Date(year, month + 1, i);
       daysArray.push({
-        dateStr: nextDate.toISOString().split("T")[0],
+        dateStr: toLocalISOString(nextDate),
         dayNum: i,
         isCurrentMonth: false,
       });
@@ -156,7 +163,7 @@ export default function CalendarPage() {
             {days.map((day, idx) => {
               const dayReminders = remindersMap[day.dateStr] || [];
               const isSelected = selectedDate === day.dateStr;
-              const isToday = new Date().toISOString().split("T")[0] === day.dateStr;
+              const isToday = toLocalISOString(new Date()) === day.dateStr;
 
               return (
                 <div
@@ -203,11 +210,14 @@ export default function CalendarPage() {
             <CalendarIcon className="w-5 h-5 text-primary" />
             <h3>
               {selectedDate
-                ? new Date(selectedDate).toLocaleDateString(undefined, {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })
+                ? (() => {
+                    const [y, m, d] = selectedDate.split("-").map(Number);
+                    return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    });
+                  })()
                 : "Select a date"}
             </h3>
           </div>

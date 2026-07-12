@@ -184,7 +184,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-neutral-900 rounded-xl shadow-2xl z-50 py-2 border border-border"
+                      className="fixed sm:absolute top-[70px] left-4 right-4 sm:top-auto sm:left-auto sm:right-0 mt-2 sm:w-80 max-w-sm bg-neutral-900 rounded-xl shadow-2xl z-50 py-2 border border-border origin-top-right"
                     >
                       <div className="px-4 py-2 border-b border-border flex justify-between items-center">
                         <span className="font-bold text-sm">Notifications</span>

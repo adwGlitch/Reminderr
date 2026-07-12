@@ -24,7 +24,7 @@ const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 5;
 /**
  * Creates a server-side session after verifying the Firebase ID token.
  */
-export async function createSession(idToken: string): Promise<{ success: boolean; error?: string }> {
+export async function createSession(idToken: string): Promise<{ success: boolean; error?: string; cookieValue?: string; maxAge?: number }> {
   try {
     console.log("[Session] Verifying ID token with Admin SDK...");
     const adminAuth = getAdminAuth();
@@ -52,8 +52,6 @@ export async function createSession(idToken: string): Promise<{ success: boolean
       throw new Error("Failed to decode token after retries");
     }
 
-    console.log("[Session] Token verified ✓ uid:", decoded.uid);
-
     const cookieData: CookieData = {
       uid: decoded.uid,
       email: decoded.email || "",
@@ -61,17 +59,12 @@ export async function createSession(idToken: string): Promise<{ success: boolean
       exp: Math.floor(Date.now() / 1000) + SESSION_DURATION_SECONDS,
     };
 
-    const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify(cookieData), {
-      maxAge: SESSION_DURATION_SECONDS,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      sameSite: "lax",
-    });
-
-    console.log("[Session] Session cookie set successfully ✓ (expires in 5 days)");
-    return { success: true };
+    console.log("[Session] Token verified ✓ uid:", decoded.uid);
+    return { 
+      success: true, 
+      cookieValue: JSON.stringify(cookieData), 
+      maxAge: SESSION_DURATION_SECONDS 
+    };
   } catch (error: any) {
     console.error(
       "[Session] Failed to create session.",
@@ -119,13 +112,6 @@ export async function getSession(): Promise<SessionPayload | null> {
  * Deletes the session cookie, logging the user out server-side.
  */
 export async function deleteSession(): Promise<boolean> {
-  try {
-    const cookieStore = await cookies();
-    cookieStore.delete(SESSION_COOKIE_NAME);
-    console.log("[Session] Session cookie deleted ✓");
-    return true;
-  } catch (error: any) {
-    console.error("[Session] Failed to delete session cookie:", error?.message);
-    return false;
-  }
+  // Let the route handler perform the deletion to avoid Next.js Edge runtime constraints
+  return true;
 }

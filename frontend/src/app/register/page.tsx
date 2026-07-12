@@ -115,9 +115,16 @@ export default function RegisterPage() {
       });
 
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
+        let body: any = {};
+        let rawText = "";
+        try {
+          rawText = await res.text();
+          body = JSON.parse(rawText);
+        } catch (e) {
+          console.error("Failed to parse response as JSON. Raw text:", rawText);
+        }
         console.error("[Register] Session sync failed:", res.status, body);
-        throw new Error(body.error || "Failed to synchronize session cookie.");
+        throw new Error(body.error || `Failed to synchronize session cookie (HTTP ${res.status}): ${rawText.substring(0, 100)}`);
       }
 
       console.log("[Register] Session synchronized ✓ — redirecting to dashboard");
@@ -131,6 +138,17 @@ export default function RegisterPage() {
       }, 2500);
     } catch (err: any) {
       console.warn("[Register] Error:", err?.code, err?.message);
+
+      // Rollback: if we created an auth user but something else failed (like session sync), delete the user
+      // so their email doesn't get locked in a partially registered state.
+      if (auth.currentUser) {
+        try {
+          console.log("[Register] Rolling back user creation due to error...");
+          await auth.currentUser.delete();
+        } catch (rollbackErr) {
+          console.error("[Register] Failed to rollback user:", rollbackErr);
+        }
+      }
 
       const message = err?.code
         ? getRegisterErrorMessage(err.code)

@@ -327,7 +327,7 @@ export default function GroupDetailPage({ params }: PageProps) {
                   onClick={async () => {
                     if (confirm("Are you sure? This will permanently delete the group and all its reminders. This cannot be undone.")) {
                       try {
-                        await deleteGroup(groupId);
+                        await deleteGroup();
                         router.push("/groups");
                       } catch (err: any) {
                         alert(err.message || "Failed to delete group.");
